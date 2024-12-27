@@ -4,3 +4,4 @@ n_keywords: 10
 ngrams:
     - 1
     - 1
+save_path: logs/
