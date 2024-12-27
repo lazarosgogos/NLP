@@ -1,0 +1,6 @@
+dataset_path: "datasets/arxiv-metadata-oai-snapshot.json"
+transformer_model: "base" # will be used later on for testing in KeyBERT
+n_keywords: 10
+ngrams:
+    - 1
+    - 1
