@@ -15,7 +15,8 @@ from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 import networkx as nx
 import tqdm
-
+import pickle
+import os
 logger = logging.getLogger()
 DEBUG_FLAG = 0
 
@@ -35,17 +36,33 @@ DEBUG_FLAG = 0
     #
     # Use Client/Server model with requests ?
     # Split program to train and query part
+    #
     # PageRank, if applied on a citation graph, is a Tree, since a paper
     # can only reference ** already existing papers **. However, using keywords
     # to map papers to other papers, this should not be a problem
 # TODO!:
-    # add save/load functionality so that index is not constantly being rebuild from scratch
+    # add save/load functionality so that index is not constantly being rebuilt from scratch
 
 
 def debug(*text):
     if DEBUG_FLAG:
         print(*text)
 
+def save_mappings(save_path, mappings):
+    filename = 'mappings.pkl'
+    save_path = os.path.join(save_path, filename)
+    with open(save_path, 'wb') as f:
+        pickle.dump(mappings, f)
+
+
+def load_mappings(save_path):
+    with open(save_path, 'rb') as f:
+        pkl = pickle.load(f)
+    paper_to_keywords = pkl['paper_to_keywords']
+    keyword_to_papers = pkl['keyword_to_papers']
+    id_to_title = pkl['id_to_title']
+    paper_to_paper = pkl['paper_to_paper']
+    return paper_to_keywords, keyword_to_papers, id_to_title, paper_to_paper
 
 def train(params, devices, DEBUG=True):
     if isinstance(devices, list):
@@ -60,14 +77,17 @@ def train(params, devices, DEBUG=True):
     ngrams = params['ngrams'] # this is a list of length=2 (min, max) ngrams
     use_mmr = params['use_mmr'] # maximal marginal relevance
     use_msd = params['use_msd'] # maximum sum distance
-    # -- INTERMEDIATE
-    save_path = params['save_path']
-    # -- QUERY
+    transformer_model_name = params['transformer_model_name']
 
-    # dataset = ArxivDataset(dataset_path)
+    # -- INTERMEDIATE
+    mappings_path = params['mappings_path']
+    # -- QUERY
+    query_keywords = params['query_keywords']
+    query_papers = params['query_papers']
+
     # model name should come from config!
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+    model = SentenceTransformer(transformer_model_name, device=device)
 
     keybert = KeyBERT(model=model, )
     paper_to_keywords = dict()
@@ -105,17 +125,23 @@ def train(params, devices, DEBUG=True):
                 keyword_to_papers[keyword].add(id)
             if idx == 5000:
                 break
+
+    # Map each paper to other papers, forming a graph of related papers
     for source_paper, keywords in paper_to_keywords.items():
-        # """
-#        This can be done with list comprehension
         for kw in keywords:
             target_papers = keyword_to_papers[kw]
             for target_paper in target_papers:
                 # print('types:', type(source_paper), type(target_paper))
                 paper_to_paper[source_paper].add(target_paper)
-        # """
-        # paper_to_paper[source_paper].add(keyword_to_papers[kw] for kw in keywords)
 
+    save_mappings = False
+    if save_mappings:
+        mappings = {'paper_to_keywords': paper_to_keywords,
+        'keyword_to_papers': keyword_to_papers,
+        'id_to_title': id_to_title,
+        'paper_to_paper': paper_to_paper,
+        }
+        save_mappings(mappings_path, mappings)
 
     # now we have the paper-to-paper mapping
     # Now run pagerank to determine which papers are the best ones

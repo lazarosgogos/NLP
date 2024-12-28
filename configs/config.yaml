@@ -8,16 +8,16 @@ ngrams:
 use_mmr: false
 use_msd: false
 num_workers: 20
-model_name: "all-MiniLM-L6-v2" # default KeyBERT model
+transformer_model_name: "all-MiniLM-L6-v2" # default KeyBERT model
 
 # -- INTERMEDIATE
-save_path: logs/pagerank_100
+mappings_path: logs/pagerank_100
 
-# QUERY
-keywords:
+# -- QUERY - TODO
+query_keywords:
     - hubble
     - telescope
-papers:
+query_papers:
     - paper_path_1
     - paper_path_2
     # OR
