@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import train
+import train_distributed
 
 
 parser = argparse.ArgumentParser()
@@ -54,6 +55,7 @@ def main(fname, devices=None, debug=False): # devices is None for now
     logger.setLevel(logging.ERROR)
     logger.info('loaded params from configuration file ..')
     pprint.pprint(params)
+    # train_distributed.train(params, devices, debug)
     train.train(params, devices, debug)
 
 

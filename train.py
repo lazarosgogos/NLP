@@ -35,7 +35,9 @@ DEBUG_FLAG = 0
     #
     # Use Client/Server model with requests ?
     # Split program to train and query part
-    #
+    # PageRank, if applied on a citation graph, is a Tree, since a paper
+    # can only reference ** already existing papers **. However, using keywords
+    # to map papers to other papers, this should not be a problem
 # TODO!:
     # add save/load functionality so that index is not constantly being rebuild from scratch
 
@@ -78,7 +80,7 @@ def train(params, devices, DEBUG=True):
         num_lines = sum(1 for line in dataset) # count lines
         print('Lines:', num_lines)
     with open(dataset_path, 'r') as dataset:
-        for idx, line in enumerate(tqdm.tqdm(dataset)):
+        for idx, line in enumerate(tqdm.tqdm(dataset, total=num_lines)):
             entry = json.loads(line)
             id = entry['id']
             title = entry['title']
@@ -101,8 +103,8 @@ def train(params, devices, DEBUG=True):
             paper_to_keywords[id] = keywords[0] # extract only the keyword for now, not its similarity to the paper
             for keyword, similarity_to_doc in keywords:
                 keyword_to_papers[keyword].add(id)
-            # if idx == 100:
-            #     break
+            if idx == 5000:
+                break
     for source_paper, keywords in paper_to_keywords.items():
         # """
 #        This can be done with list comprehension
@@ -150,8 +152,6 @@ def train(params, devices, DEBUG=True):
         top_n_papers_query = 5 # this should be configurable
         for i in range(min(top_n_papers_query, len(gather_papers))):
             print(gather_papers[i], id_to_title[gather_papers[i]])
-
-
 
         inn = input(msg)
 
