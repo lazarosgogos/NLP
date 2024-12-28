@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--fname', type=str,
     help='name of config file to load',
-    default='configs/config.yaml'
+    default='configs/config.yaml',
 )
 parser.add_argument(
     '--devices', type=str, nargs='+', default=['cuda:0'],
@@ -26,8 +26,25 @@ parser.add_argument(
 )
 parser.add_argument(
     '--debug', action=argparse.BooleanOptionalAction, default=False,
-    help='print helpful debug info or not'
+    help='print helpful debug info (true if present, defaults to false)'
 )
+
+parser.add_argument(
+    '--train', action=argparse.BooleanOptionalAction, default=False,
+    help='create new index based on dataset',
+)
+
+parser.add_argument(
+    '--keywords', type=str, nargs=1,
+    help='Query keywords, separated by commas (e.g. "brute force, hubble, space telescope")'
+)
+
+parser.add_argument(
+    '--papers', type=str, nargs=1,
+    help='Query papers, from which keywords will automatically be extracted. \
+    Can also be a directory with papers.'
+)
+
 def main(fname, devices=None, debug=False): # devices is None for now
     params = yaml.load(open(fname, 'r'), Loader=yaml.FullLoader)
     dataset_path = params['dataset_path']

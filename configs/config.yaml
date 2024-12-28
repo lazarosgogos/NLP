@@ -1,7 +1,23 @@
+# -- TRAIN
 dataset_path: "datasets/arxiv-metadata-oai-snapshot.json"
 transformer_model: "base" # will be used later on for testing in KeyBERT
 n_keywords: 10
 ngrams:
     - 1
     - 1
-save_path: logs/
+use_mmr: false
+use_msd: false
+
+# -- INTERMEDIATE
+save_path: logs/pagerank_100
+
+# QUERY
+keywords:
+    - hubble
+    - telescope
+papers:
+    - paper_path_1
+    - paper_path_2
+    # OR
+    - directory_with_papers_1
+    - dir_with_papers_2
